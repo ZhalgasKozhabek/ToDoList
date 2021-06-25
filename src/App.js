@@ -1,25 +1,66 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react';
+import ToDo from './components/ToDo';
+import ToDoForm from './components/ToDoForm';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    const [todos, setTodos] = useState( []);
+
+    useEffect(() => {
+        const todoLists = JSON.parse(localStorage.getItem("item"));
+        if (todoLists){
+            setTodos(todoLists);
+        }
+    }, []);
+
+    useEffect( () => {
+        localStorage.setItem("item", JSON.stringify(todos));
+    },[todos])
+
+    const addTask = (userInput) => {
+        if(userInput) {
+            const newItem = {
+                id: Math.random(),
+                task: userInput,
+                complete: false
+            }
+            setTodos([...todos, newItem])
+        }
+    }
+
+    const removeTask = (id) => {
+        setTodos([...todos.filter((todo) => todo.id !== id)])
+    }
+
+    const handleToggle = (id) => {
+        setTodos([
+            ...todos.map((todo) =>
+                todo.id === id ? { ...todo, complete: !todo.complete } : {...todo }
+            )
+        ]);
+    }
+
+    return (
+        <div className="App">
+            <header>
+                <div className="title">All To Do Lists: {todos.length}</div>
+            </header>
+            <ToDoForm addTask={addTask} />
+
+            {
+                todos.length === 0
+                    ? (<div > IS EMPTY </div>)
+                    : todos.map((todo) => (
+                        <ToDo
+                            todo={todo}
+                            key={todo.id}
+                            toggleTask={handleToggle}
+                            removeTask={removeTask}
+                        />
+                    ))
+            }
+        </div>
+    );
 }
 
 export default App;
